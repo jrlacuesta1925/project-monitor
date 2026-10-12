@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FiberJet Project Monitor</title>
+  <style>
+    body { font-family: Arial; background: #eef1f5; margin: 0; padding: 20px; }
+    .container { max-width: 900px; margin: auto; }
+    h1 { text-align: center; margin-bottom: 30px; }
+    .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; }
+    .btn { padding: 8px 14px; border: none; border-radius: 5px; cursor: pointer; }
+    .btn-add { background: #007bff; color: white; }
+    .btn-complete { background: #28a745; color: white; }
+    .badge { padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+    .ongoing-badge { background: #ffc107; }
+    .completed-badge { background: #28a745; color: white; }
+    input, textarea { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>FiberJet Project Monitoring</h1>
+
+  <div class="card">
+    <h2>Add New Project</h2>
+    <input id="title" placeholder="Project Title">
+    <textarea id="details" placeholder="Project Details"></textarea>
+    <button class="btn btn-add" onclick="addProject()">Add Project</button>
+  </div>
+
+  <h2>Ongoing Projects</h2>
+  <div id="ongoing"></div>
+
+  <h2>Completed Projects</h2>
+  <div id="completed"></div>
+</div>
+
+<script>
+  let ongoing = JSON.parse(localStorage.getItem("ongoing")) || [];
+  let completed = JSON.parse(localStorage.getItem("completed")) || [];
+
+  function saveData() {
+    localStorage.setItem("ongoing", JSON.stringify(ongoing));
+    localStorage.setItem("completed", JSON.stringify(completed));
+  }
+
+  function addProject() {
+    const title = document.getElementById("title").value;
+    const details = document.getElementById("details").value;
+
+    if (!title) return alert("Enter project title");
+
+    const project = {
+      title,
+      details,
+      date: new Date().toLocaleDateString()
+    };
+
+    ongoing.push(project);
+    saveData();
+    render();
+  }
+
+  function completeProject(index) {
+    completed.push({
+      ...ongoing[index],
+      completedDate: new Date().toLocaleDateString()
+    });
+    ongoing.splice(index, 1);
+    saveData();
+    render();
+  }
+
+  function render() {
+    document.getElementById("ongoing").innerHTML = ongoing.map((p, i) => `
+      <div class="card">
+        <h3>${p.title}</h3>
+        <p>${p.details}</p>
+        <span class="badge ongoing-badge">Ongoing</span>
+        <p><small>Started: ${p.date}</small></p>
+        <button class="btn btn-complete" onclick="completeProject(${i})">Mark Completed</button>
+      </div>
+    `).join("");
+
+    document.getElementById("completed").innerHTML = completed.map(p => `
+      <div class="card">
+        <h3>${p.title}</h3>
+        <p>${p.details}</p>
+        <span class="badge completed-badge">Completed</span>
+        <p><small>Started: ${p.date}</small></p>
+        <p><small>Completed: ${p.completedDate}</small></p>
+      </div>
+    `).join("");
+  }
+
+  render();
+</script>
+</body>
+</html>
